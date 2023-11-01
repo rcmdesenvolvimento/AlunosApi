@@ -1,40 +1,71 @@
-﻿using AlunosApi.Models;
+﻿using AlunosApi.Context;
+using AlunosApi.Models;
 using AlunosApi.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace AlunosApi.Services.Implementation
 {
     public class AlunoServiceImpl : IAlunoService
     {
-        public Task CreateAluno(Aluno aluno)
+        private readonly AppDbContext _appDbContext;
+
+        public AlunoServiceImpl(AppDbContext appDbContext)
         {
-            throw new System.NotImplementedException();
+            _appDbContext = appDbContext;
         }
 
-        public Task DeleteAluno(int id)
+        public async Task<IEnumerable<Aluno>> GetAllAlunos()
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                return await _appDbContext.Alunos.ToArrayAsync();
+            }
+            catch
+            {
+                throw;
+            }
         }
 
-        public Task<Aluno> GetAluno(int id)
+        public async Task<Aluno> GetAlunoById(int id)
         {
-            throw new System.NotImplementedException();
+            var aluno = await _appDbContext.Alunos.FindAsync(id);
+            return aluno;
         }
 
-        public Task<IEnumerable<Aluno>> GetAlunos()
+        public async Task<IEnumerable<Aluno>> GetAlunosByNome(string nome)
         {
-            throw new System.NotImplementedException();
+            IEnumerable<Aluno> alunos;
+
+            if (!string.IsNullOrWhiteSpace(nome))
+            {
+                alunos = await _appDbContext.Alunos.Where(n => n.Nome.Contains(nome)).ToListAsync();
+            }
+            else
+            {
+                alunos = await GetAllAlunos();
+            }
+            return alunos;
         }
 
-        public Task<IEnumerable<Aluno>> GetAlunosByNome(string nome)
+        public async Task CreateAluno(Aluno aluno)
         {
-            throw new System.NotImplementedException();
+            _appDbContext.Add(aluno);
+            await _appDbContext.SaveChangesAsync();
         }
 
-        public Task UpdateAluno(Aluno aluno)
+        public async Task DeleteAluno(Aluno aluno)
         {
-            throw new System.NotImplementedException();
+            _appDbContext.Remove(aluno);
+            await _appDbContext.SaveChangesAsync();
+        }
+
+        public async Task UpdateAluno(Aluno aluno)
+        {
+            _appDbContext.Entry(aluno).State = EntityState.Modified;
+            await _appDbContext.SaveChangesAsync();
         }
     }
 }

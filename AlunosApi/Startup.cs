@@ -1,4 +1,6 @@
 using AlunosApi.Context;
+using AlunosApi.Services.Implementation;
+using AlunosApi.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -30,6 +32,8 @@ namespace AlunosApi
         {
             services.AddDbContext<AppDbContext>(options =>
                             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddScoped<IAlunoService, AlunoServiceImpl>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
